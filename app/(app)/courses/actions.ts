@@ -2,8 +2,15 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { Course } from '@/types/database'
 
-export async function createCourseAction(prevState: any, formData: FormData) {
+// Definimos la estructura estricta reemplazando 'any' por 'Course'
+type ActionResponse =
+  | { success: true; data: Course }
+  | { error: string }
+  | null
+
+export async function createCourseAction(prevState: ActionResponse, formData: FormData): Promise<ActionResponse> {
   const name = formData.get('name') as string
   const code = formData.get('code') as string
   const color = formData.get('color') as string
@@ -46,10 +53,10 @@ export async function createCourseAction(prevState: any, formData: FormData) {
   revalidatePath('/courses')
   revalidatePath('/tasks')
   revalidatePath('/dashboard')
-  return { success: true, data }
+  return { success: true, data: data as Course }
 }
 
-export async function updateCourseAction(id: string, formData: FormData) {
+export async function updateCourseAction(id: string, formData: FormData): Promise<ActionResponse> {
   const name = formData.get('name') as string
   const code = formData.get('code') as string
   const color = formData.get('color') as string
@@ -79,7 +86,7 @@ export async function updateCourseAction(id: string, formData: FormData) {
       color,
     })
     .eq('id', id)
-    .eq('user_id', user.id) // Ensure security
+    .eq('user_id', user.id)
     .select()
     .single()
 
@@ -93,10 +100,10 @@ export async function updateCourseAction(id: string, formData: FormData) {
   revalidatePath('/courses')
   revalidatePath('/tasks')
   revalidatePath('/dashboard')
-  return { success: true, data }
+  return { success: true, data: data as Course }
 }
 
-export async function deleteCourseAction(id: string) {
+export async function deleteCourseAction(id: string): Promise<{ success: true } | { error: string }> {
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
 
@@ -108,7 +115,7 @@ export async function deleteCourseAction(id: string) {
     .from('courses')
     .delete()
     .eq('id', id)
-    .eq('user_id', user.id) // Ensure security
+    .eq('user_id', user.id)
 
   if (error) {
     return { error: `Error al eliminar el curso: ${error.message}` }

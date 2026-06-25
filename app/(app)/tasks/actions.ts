@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { TaskPriority, TaskStatus } from '@/types/database'
 
-export async function createTaskAction(prevState: any, data: {
+export async function createTaskAction(prevState: unknown, data: {
   course_id: string | null;
   title: string;
   description: string | null;

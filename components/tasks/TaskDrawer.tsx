@@ -12,7 +12,6 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
 import {
   Select,
   SelectContent,
@@ -45,7 +44,7 @@ export function TaskDrawer({ open, onOpenChange, task, courses, onSave, onDelete
   const [priority, setPriority] = useState<TaskPriority>("medium")
   const [status, setStatus] = useState<TaskStatus>("pending")
   const [dueDate, setDueDate] = useState("")
-  const [courseId, setCourseId] = useState<string>("none")
+  const [courseId, setCourseId] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Sync form state when task or open changes
@@ -96,9 +95,6 @@ export function TaskDrawer({ open, onOpenChange, task, courses, onSave, onDelete
       }
     }
   }
-
-  // Selected course details for preview
-  const selectedCourse = courses.find(c => c.id === courseId)
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -151,7 +147,7 @@ export function TaskDrawer({ open, onOpenChange, task, courses, onSave, onDelete
                 <Label className="text-xs font-semibold text-text-secondary uppercase flex items-center gap-1.5">
                   <BookOpen className="w-3.5 h-3.5" /> Curso
                 </Label>
-                <Select value={courseId} onValueChange={setCourseId} disabled={isSubmitting}>
+                <Select value={courseId || "none"} onValueChange={setCourseId} disabled={isSubmitting}>
                   <SelectTrigger className="w-full bg-bg-sunken border-border-default text-text-primary">
                     <SelectValue placeholder="Selecciona un curso" />
                   </SelectTrigger>

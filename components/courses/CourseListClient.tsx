@@ -22,13 +22,17 @@ import {
 import { Plus, Pencil, Trash2, BookOpen } from 'lucide-react'
 import { toast } from 'sonner'
 
+type OptimisticAction =
+  | { type: 'create' | 'update'; data: Course }
+  | { type: 'delete'; data: { id: string } }
+
 export function CourseListClient({ initialCourses }: { initialCourses: Course[] }) {
   const [coursesState, setCoursesState] = useState<Course[]>(initialCourses)
 
   // useOptimistic for immediate UI feedback
   const [optimisticCourses, setOptimisticCourses] = useOptimistic(
     coursesState,
-    (state, action: { type: 'create' | 'update' | 'delete'; data: any }) => {
+    (state, action: OptimisticAction) => {
       switch (action.type) {
         case 'create':
           return [...state, action.data].sort((a, b) => a.name.localeCompare(b.name))
@@ -51,7 +55,7 @@ export function CourseListClient({ initialCourses }: { initialCourses: Course[] 
   // Form states
   const [name, setName] = useState('')
   const [code, setCode] = useState('')
-  const [color, setColor] = useState(COURSE_COLOR_PRESETS[0].value)
+  const [color, setColor] = useState<string>(COURSE_COLOR_PRESETS[0].value)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const openCreateDialog = () => {
@@ -100,13 +104,20 @@ export function CourseListClient({ initialCourses }: { initialCourses: Course[] 
 
     try {
       const result = await createCourseAction(null, formData)
-      if (result.error) {
+
+      // Control de seguridad si result llega a ser null
+      if (!result) {
+        toast.error('No se recibió respuesta del servidor.')
+        return
+      }
+
+      if ('error' in result && result.error) {
         toast.error(result.error)
-      } else if (result.success && result.data) {
+      } else if ('success' in result && result.success && result.data) {
         toast.success(`Curso "${name}" creado exitosamente.`)
         setCoursesState(prev => [...prev, result.data as Course].sort((a, b) => a.name.localeCompare(b.name)))
       }
-    } catch (error) {
+    } catch {
       toast.error('Ocurrió un error inesperado al crear el curso.')
     } finally {
       setIsSubmitting(false)
@@ -140,13 +151,20 @@ export function CourseListClient({ initialCourses }: { initialCourses: Course[] 
 
     try {
       const result = await updateCourseAction(editingCourse.id, formData)
-      if (result.error) {
+
+      // Control de seguridad si result llega a ser null
+      if (!result) {
+        toast.error('No se recibió respuesta del servidor.')
+        return
+      }
+
+      if ('error' in result && result.error) {
         toast.error(result.error)
-      } else if (result.success && result.data) {
+      } else if ('success' in result && result.success && result.data) {
         toast.success(`Curso "${name}" actualizado.`)
         setCoursesState(prev => prev.map(c => (c.id === editingCourse.id ? (result.data as Course) : c)).sort((a, b) => a.name.localeCompare(b.name)))
       }
-    } catch (error) {
+    } catch {
       toast.error('Ocurrió un error inesperado al actualizar el curso.')
     } finally {
       setIsSubmitting(false)
@@ -163,13 +181,19 @@ export function CourseListClient({ initialCourses }: { initialCourses: Course[] 
 
     try {
       const result = await deleteCourseAction(targetId)
-      if (result.error) {
+
+      if (!result) {
+        toast.error('No se recibió respuesta del servidor.')
+        return
+      }
+
+      if ('error' in result && result.error) {
         toast.error(result.error)
       } else {
         toast.success('Curso eliminado correctamente.')
         setCoursesState(prev => prev.filter(c => c.id !== targetId))
       }
-    } catch (error) {
+    } catch {
       toast.error('Ocurrió un error inesperado al eliminar el curso.')
     }
   }

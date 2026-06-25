@@ -1,6 +1,6 @@
 'use client'
 
-import { useOptimistic, useState, useTransition } from 'react'
+import { useOptimistic, useState } from 'react'
 import { Task, Course, TaskPriority, TaskStatus } from '@/types/database'
 import { createTaskAction, updateTaskAction, deleteTaskAction, toggleTaskStatusAction } from '@/app/(app)/tasks/actions'
 import { Card } from '@/components/ui/card'
@@ -18,7 +18,6 @@ import { TaskDrawer } from '@/components/tasks/TaskDrawer'
 import {
   Clock,
   CheckCircle2,
-  AlertCircle,
   Plus,
   Search,
   BookOpen,
@@ -29,26 +28,32 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 
+// Tipo estricto para la acción optimista, evitando el uso de 'any'
+type OptimisticTaskAction =
+  | { type: 'create' | 'update'; data: Task }
+  | { type: 'toggle'; data: { id: string } }
+  | { type: 'delete'; data: { id: string } }
+
 export function TaskListClient({ initialTasks, courses }: { initialTasks: Task[]; courses: Course[] }) {
   const [tasksState, setTasksState] = useState<Task[]>(initialTasks)
-  const [isPending, startTransition] = useTransition()
 
   // useOptimistic for immediate UI feedback on task operations
   const [optimisticTasks, setOptimisticTasks] = useOptimistic(
     tasksState,
-    (state, action: { type: 'create' | 'update' | 'delete' | 'toggle'; data: any }) => {
+    (state, action: OptimisticTaskAction) => {
       switch (action.type) {
         case 'create':
           return [action.data, ...state]
         case 'update':
           return state.map(t => (t.id === action.data.id ? { ...t, ...action.data } : t))
-        case 'toggle':
+        case 'toggle': {
           const nextStatusMap: Record<TaskStatus, TaskStatus> = {
             'pending': 'in_progress',
             'in_progress': 'completed',
             'completed': 'pending',
           }
           return state.map(t => (t.id === action.data.id ? { ...t, status: nextStatusMap[t.status] } : t))
+        }
         case 'delete':
           return state.filter(t => t.id !== action.data.id)
         default:
@@ -59,9 +64,9 @@ export function TaskListClient({ initialTasks, courses }: { initialTasks: Task[]
 
   // Filters State
   const [searchQuery, setSearchQuery] = useState('')
-  const [courseFilter, setCourseFilter] = useState('all')
-  const [priorityFilter, setPriorityFilter] = useState('all')
-  const [statusFilter, setStatusFilter] = useState('all')
+  const [courseFilter, setCourseFilter] = useState<string | null>('all')
+  const [priorityFilter, setPriorityFilter] = useState<string | null>('all')
+  const [statusFilter, setStatusFilter] = useState<string | null>('all')
 
   // Drawer States
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -106,13 +111,17 @@ export function TaskListClient({ initialTasks, courses }: { initialTasks: Task[]
 
       try {
         const result = await updateTaskAction(selectedTask.id, data)
-        if (result.error) {
+        if (!result) {
+          toast.error('No se recibió respuesta del servidor.')
+          return
+        }
+        if ('error' in result && result.error) {
           toast.error(result.error)
-        } else if (result.success && result.data) {
+        } else if ('success' in result && result.success && result.data) {
           toast.success('Tarea actualizada.')
           setTasksState(prev => prev.map(t => (t.id === selectedTask.id ? (result.data as Task) : t)))
         }
-      } catch (err) {
+      } catch {
         toast.error('Error al guardar la tarea.')
       }
     } else {
@@ -131,13 +140,17 @@ export function TaskListClient({ initialTasks, courses }: { initialTasks: Task[]
 
       try {
         const result = await createTaskAction(null, data)
-        if (result.error) {
+        if (!result) {
+          toast.error('No se recibió respuesta del servidor.')
+          return
+        }
+        if ('error' in result && result.error) {
           toast.error(result.error)
-        } else if (result.success && result.data) {
+        } else if ('success' in result && result.success && result.data) {
           toast.success('Tarea creada correctamente.')
           setTasksState(prev => [result.data as Task, ...prev])
         }
-      } catch (err) {
+      } catch {
         toast.error('Error al crear la tarea.')
       }
     }
@@ -150,13 +163,17 @@ export function TaskListClient({ initialTasks, courses }: { initialTasks: Task[]
 
     try {
       const result = await deleteTaskAction(id)
-      if (result.error) {
+      if (!result) {
+        toast.error('No se recibió respuesta del servidor.')
+        return
+      }
+      if ('error' in result && result.error) {
         toast.error(result.error)
       } else {
-        toast.success('Tarea eliminada.')
+        toast.success('Tarea java eliminada.')
         setTasksState(prev => prev.filter(t => t.id !== id))
       }
-    } catch (err) {
+    } catch {
       toast.error('Error al eliminar la tarea.')
     }
   }
@@ -168,12 +185,16 @@ export function TaskListClient({ initialTasks, courses }: { initialTasks: Task[]
 
     try {
       const result = await toggleTaskStatusAction(task.id, task.status)
-      if (result.error) {
+      if (!result) {
+        toast.error('No se recibió respuesta del servidor.')
+        return
+      }
+      if ('error' in result && result.error) {
         toast.error(result.error)
-      } else if (result.success && result.data) {
+      } else if ('success' in result && result.success && result.data) {
         setTasksState(prev => prev.map(t => (t.id === task.id ? (result.data as Task) : t)))
       }
-    } catch (err) {
+    } catch {
       toast.error('Error al actualizar el estado de la tarea.')
     }
   }
@@ -292,7 +313,7 @@ export function TaskListClient({ initialTasks, courses }: { initialTasks: Task[]
           {/* Course Filter */}
           <div className="flex items-center gap-2">
             <BookOpen className="w-4 h-4 text-text-tertiary shrink-0" />
-            <Select value={courseFilter} onValueChange={setCourseFilter}>
+            <Select value={courseFilter} onValueChange={(val) => { if (val !== null) setCourseFilter(val) }}>
               <SelectTrigger className="w-full bg-bg-elevated border-border-default text-text-primary text-sm h-9">
                 <SelectValue placeholder="Curso" />
               </SelectTrigger>
@@ -314,7 +335,7 @@ export function TaskListClient({ initialTasks, courses }: { initialTasks: Task[]
           {/* Priority Filter */}
           <div className="flex items-center gap-2">
             <Tag className="w-4 h-4 text-text-tertiary shrink-0" />
-            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+            <Select value={priorityFilter} onValueChange={(val) => { if (val !== null) setPriorityFilter(val) }}>
               <SelectTrigger className="w-full bg-bg-elevated border-border-default text-text-primary text-sm h-9">
                 <SelectValue placeholder="Prioridad" />
               </SelectTrigger>
@@ -330,7 +351,7 @@ export function TaskListClient({ initialTasks, courses }: { initialTasks: Task[]
           {/* Status Filter */}
           <div className="flex items-center gap-2">
             <Circle className="w-4 h-4 text-text-tertiary shrink-0" />
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={statusFilter} onValueChange={(val) => { if (val !== null) setStatusFilter(val) }}>
               <SelectTrigger className="w-full bg-bg-elevated border-border-default text-text-primary text-sm h-9">
                 <SelectValue placeholder="Estado" />
               </SelectTrigger>
@@ -367,9 +388,8 @@ export function TaskListClient({ initialTasks, courses }: { initialTasks: Task[]
                 <div
                   key={task.id}
                   onClick={() => handleOpenEdit(task)}
-                  className={`group flex items-center gap-4 px-6 py-4 hover:bg-bg-sunken/50 transition-colors cursor-pointer ${
-                    isCompleted ? 'opacity-65' : ''
-                  }`}
+                  className={`group flex items-center gap-4 px-6 py-4 hover:bg-bg-sunken/50 transition-colors cursor-pointer ${isCompleted ? 'opacity-65' : ''
+                    }`}
                 >
                   {/* Status Toggle Box */}
                   <button
@@ -402,13 +422,12 @@ export function TaskListClient({ initialTasks, courses }: { initialTasks: Task[]
                     {/* Due date */}
                     {task.due_date && (
                       <span
-                        className={`flex items-center gap-1.5 text-xs font-medium ${
-                          isCompleted
-                            ? 'text-text-tertiary'
-                            : task.due_date < new Date().toISOString().split('T')[0]
+                        className={`flex items-center gap-1.5 text-xs font-medium ${isCompleted
+                          ? 'text-text-tertiary'
+                          : task.due_date < new Date().toISOString().split('T')[0]
                             ? 'text-error'
                             : 'text-text-secondary'
-                        }`}
+                          }`}
                       >
                         <Clock className="w-3.5 h-3.5" />
                         {formatDueDate(task.due_date)}
@@ -416,13 +435,19 @@ export function TaskListClient({ initialTasks, courses }: { initialTasks: Task[]
                     )}
 
                     {/* Priority Badge */}
-                    <Badge variant="outline" className={`hidden sm:inline-flex px-2 py-0.5 text-[10px] font-bold ${priorityStyles[task.priority]}`}>
-                      {task.priority.toUpperCase()}
+                    <Badge
+                      variant="outline"
+                      className={`hidden sm:inline-flex px-2 py-0.5 text-[10px] font-bold ${priorityStyles[task.priority as TaskPriority]}`}
+                    >
+                      {task.priority ? task.priority.toUpperCase() : ''}
                     </Badge>
 
                     {/* Status Badge */}
-                    <Badge variant="outline" className={`hidden md:inline-flex px-2 py-0.5 text-[10px] font-bold ${statusStyles[task.status]}`}>
-                      {statusLabels[task.status]}
+                    <Badge
+                      variant="outline"
+                      className={`hidden md:inline-flex px-2 py-0.5 text-[10px] font-bold ${statusStyles[task.status as TaskStatus]}`}
+                    >
+                      {statusLabels[task.status as TaskStatus]}
                     </Badge>
 
                     <ChevronRight className="w-4 h-4 text-text-tertiary opacity-0 group-hover:opacity-100 transition-opacity" />
