@@ -24,8 +24,8 @@ export default async function DashboardPage() {
   const allTasks = tasks || [];
 
   // Calculate statistics
-  const pendingTasks = allTasks.filter(t => t.status !== "completed");
-  const completedTasks = allTasks.filter(t => t.status === "completed");
+  const pendingTasks = allTasks.filter(t => t.status !== "OMPLETED");
+  const completedTasks = allTasks.filter(t => t.status === "OMPLETED");
 
   const todayStr = new Date().toISOString().split("T")[0];
 
