@@ -269,9 +269,9 @@ export function TaskListClient({ initialTasks, courses }: { initialTasks: Task[]
 
   // Priority Styles mapping
   const priorityStyles: Record<TaskPriority, string> = {
-    high: 'bg-priority-high-bg text-priority-high border-priority-high-border',
-    medium: 'bg-priority-medium-bg text-priority-medium border-priority-medium-border',
-    low: 'bg-priority-low-bg text-priority-low border-priority-low-border',
+    HIGH: 'bg-priority-high-bg text-priority-high border-priority-high-border',
+    MEDIUM: 'bg-priority-medium-bg text-priority-medium border-priority-medium-border',
+    LOW: 'bg-priority-low-bg text-priority-low border-priority-low-border',
   }
 
   // Status Styles mapping

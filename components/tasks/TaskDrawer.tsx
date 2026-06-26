@@ -41,7 +41,7 @@ interface TaskDrawerProps {
 export function TaskDrawer({ open, onOpenChange, task, courses, onSave, onDelete }: TaskDrawerProps) {
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
-  const [priority, setPriority] = useState<TaskPriority>("medium")
+  const [priority, setPriority] = useState<TaskPriority>("MEDIUM")
   const [status, setStatus] = useState<TaskStatus>("pending")
   const [dueDate, setDueDate] = useState("")
   const [courseId, setCourseId] = useState<string | null>(null)
@@ -52,14 +52,14 @@ export function TaskDrawer({ open, onOpenChange, task, courses, onSave, onDelete
     if (task) {
       setTitle(task.title || "")
       setDescription(task.description || "")
-      setPriority(task.priority || "medium")
+      setPriority(task.priority || "MEDIUM")
       setStatus(task.status || "pending")
       setDueDate(task.due_date || "")
       setCourseId(task.course_id || "none")
     } else {
       setTitle("")
       setDescription("")
-      setPriority("medium")
+      setPriority("MEDIUM")
       setStatus("pending")
       setDueDate("")
       setCourseId("none")
@@ -176,17 +176,17 @@ export function TaskDrawer({ open, onOpenChange, task, courses, onSave, onDelete
                       <SelectValue placeholder="Prioridad" />
                     </SelectTrigger>
                     <SelectContent className="bg-bg-elevated border-border-default">
-                      <SelectItem value="low">
+                      <SelectItem value="LOW">
                         <span className="flex items-center gap-1.5">
                           <span className="w-2 h-2 rounded-full bg-priority-low" /> Baja
                         </span>
                       </SelectItem>
-                      <SelectItem value="medium">
+                      <SelectItem value="MEDIUM">
                         <span className="flex items-center gap-1.5">
                           <span className="w-2 h-2 rounded-full bg-priority-medium" /> Media
                         </span>
                       </SelectItem>
-                      <SelectItem value="high">
+                      <SelectItem value="HIGH">
                         <span className="flex items-center gap-1.5">
                           <span className="w-2 h-2 rounded-full bg-priority-high" /> Alta
                         </span>
