@@ -42,7 +42,7 @@ export function TaskDrawer({ open, onOpenChange, task, courses, onSave, onDelete
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [priority, setPriority] = useState<TaskPriority>("MEDIUM")
-  const [status, setStatus] = useState<TaskStatus>("pending")
+  const [status, setStatus] = useState<TaskStatus>("PENDING")
   const [dueDate, setDueDate] = useState("")
   const [courseId, setCourseId] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -53,14 +53,14 @@ export function TaskDrawer({ open, onOpenChange, task, courses, onSave, onDelete
       setTitle(task.title || "")
       setDescription(task.description || "")
       setPriority(task.priority || "MEDIUM")
-      setStatus(task.status || "pending")
+      setStatus(task.status || "PENDING")
       setDueDate(task.due_date || "")
       setCourseId(task.course_id || "none")
     } else {
       setTitle("")
       setDescription("")
       setPriority("MEDIUM")
-      setStatus("pending")
+      setStatus("PENDING")
       setDueDate("")
       setCourseId("none")
     }
@@ -204,9 +204,9 @@ export function TaskDrawer({ open, onOpenChange, task, courses, onSave, onDelete
                       <SelectValue placeholder="Estado" />
                     </SelectTrigger>
                     <SelectContent className="bg-bg-elevated border-border-default">
-                      <SelectItem value="pending">Pendiente</SelectItem>
-                      <SelectItem value="in_progress">En progreso</SelectItem>
-                      <SelectItem value="completed">Completada</SelectItem>
+                      <SelectItem value="PENDING">Pendiente</SelectItem>
+                      <SelectItem value="IN_PROGRESS">En progreso</SelectItem>
+                      <SelectItem value="COMPLETED">Completada</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

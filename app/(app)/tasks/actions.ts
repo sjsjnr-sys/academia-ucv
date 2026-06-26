@@ -95,9 +95,9 @@ export async function updateTaskAction(id: string, data: {
 
 export async function toggleTaskStatusAction(id: string, currentStatus: TaskStatus) {
   const nextStatusMap: Record<TaskStatus, TaskStatus> = {
-    'pending': 'in_progress',
-    'in_progress': 'completed',
-    'completed': 'pending',
+    'PENDING': 'IN_PROGRESS',
+    'IN_PROGRESS': 'COMPLETED',
+    'COMPLETED': 'PENDING',
   }
   const nextStatus = nextStatusMap[currentStatus]
 

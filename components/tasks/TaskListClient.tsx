@@ -48,9 +48,9 @@ export function TaskListClient({ initialTasks, courses }: { initialTasks: Task[]
           return state.map(t => (t.id === action.data.id ? { ...t, ...action.data } : t))
         case 'toggle': {
           const nextStatusMap: Record<TaskStatus, TaskStatus> = {
-            'pending': 'in_progress',
-            'in_progress': 'completed',
-            'completed': 'pending',
+            'PENDING': 'IN_PROGRESS',
+            'IN_PROGRESS': 'COMPLETED',
+            'COMPLETED': 'PENDING',
           }
           return state.map(t => (t.id === action.data.id ? { ...t, status: nextStatusMap[t.status] } : t))
         }
@@ -263,8 +263,8 @@ export function TaskListClient({ initialTasks, courses }: { initialTasks: Task[]
 
   // Sort: completed tasks at the bottom, pending/in_progress on top. Then by due date (nulls at the end)
   const sortedTasks = [...filteredTasks].sort((a, b) => {
-    if (a.status === 'completed' && b.status !== 'completed') return 1
-    if (a.status !== 'completed' && b.status === 'completed') return -1
+    if (a.status === 'COMPLETED' && b.status !== 'COMPLETED') return 1
+    if (a.status !== 'COMPLETED' && b.status === 'COMPLETED') return -1
 
     if (!a.due_date && b.due_date) return 1
     if (a.due_date && !b.due_date) return -1
@@ -282,15 +282,15 @@ export function TaskListClient({ initialTasks, courses }: { initialTasks: Task[]
 
   // Status Styles mapping
   const statusStyles: Record<TaskStatus, string> = {
-    pending: 'bg-neutral-100 text-text-secondary border-border-default dark:bg-neutral-800 dark:text-text-secondary',
-    in_progress: 'bg-info-bg text-info border-info/20',
-    completed: 'bg-success-bg text-success border-success/20',
+    PENDING: 'bg-neutral-100 text-text-secondary border-border-default dark:bg-neutral-800 dark:text-text-secondary',
+    IN_PROGRESS: 'bg-info-bg text-info border-info/20',
+    COMPLETED: 'bg-success-bg text-success border-success/20',
   }
 
   const statusLabels: Record<TaskStatus, string> = {
-    pending: 'Pendiente',
-    in_progress: 'En progreso',
-    completed: 'Completada',
+    PENDING: 'Pendiente',
+    IN_PROGRESS: 'En progreso',
+    COMPLETED: 'Completada',
   }
 
   return (
@@ -363,9 +363,9 @@ export function TaskListClient({ initialTasks, courses }: { initialTasks: Task[]
               </SelectTrigger>
               <SelectContent className="bg-bg-elevated border-border-default">
                 <SelectItem value="all">Todos los estados</SelectItem>
-                <SelectItem value="pending">Pendiente</SelectItem>
-                <SelectItem value="in_progress">En progreso</SelectItem>
-                <SelectItem value="completed">Completada</SelectItem>
+                <SelectItem value="PENDING">Pendiente</SelectItem>
+                <SelectItem value="IN_PROGRESS">En progreso</SelectItem>
+                <SelectItem value="COMPLETED">Completada</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -387,7 +387,7 @@ export function TaskListClient({ initialTasks, courses }: { initialTasks: Task[]
         ) : (
           <div className="divide-y divide-border-subtle bg-bg-elevated">
             {sortedTasks.map(task => {
-              const isCompleted = task.status === 'completed'
+              const isCompleted = task.status === 'COMPLETED'
               const courseColor = task.courses?.color || '#C5C4C1'
 
               return (
