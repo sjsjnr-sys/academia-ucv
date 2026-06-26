@@ -95,6 +95,12 @@ export function TaskListClient({ initialTasks, courses }: { initialTasks: Task[]
   }) => {
     setDrawerOpen(false)
 
+    // Forzamos que la prioridad vaya en MAYÚSCULAS para la API/Base de datos
+    const dataForBackend = {
+      ...data,
+      priority: data.priority.toUpperCase() as TaskPriority
+    }
+
     // Find course object for optimistic rendering
     const selectedCourseObj = courses.find(c => c.id === data.course_id) || null
 
