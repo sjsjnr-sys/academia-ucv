@@ -1,4 +1,4 @@
-export type TaskPriority = 'low' | 'medium' | 'high';
+export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH';
 export type TaskStatus = 'pending' | 'in_progress' | 'completed';
 
 export interface Profile {
